@@ -181,8 +181,9 @@ class MediaManager extends Extension
                 'preview'   => $this->getFilePreview($file),
                 'isDir'     => false,
                 'size'      => $this->getFilesize($file),
-                'link'      => route('media-index', ['path' => '/'.trim($file, '/')]),
+                'link'      => route('media-download', compact('file')),
                 'url'       => $this->storage->url($file),
+                'time'      => $this->getFileChangeTime($file),
             ];
 
         }, $files);
@@ -192,7 +193,7 @@ class MediaManager extends Extension
 
     public function formatDirectories($dirs = [])
     {
-        $url = route('media-index', ['path' => '__path__']);
+        $url = route('media-index', ['path' => '__path__', 'view' => request('view')]);
 
         $preview = "<a href=\"$url\"><span class=\"file-icon text-aqua\"><i class=\"fa fa-folder\"></i></span></a>";
 
@@ -205,8 +206,9 @@ class MediaManager extends Extension
                 'preview'   => str_replace('__path__', $dir, $preview),
                 'isDir'     => true,
                 'size'      => '',
-                'link'      => route('media-index', ['path' => '/'.trim($dir, '/')]),
+                'link'      => route('media-index', ['path' => '/'.trim($dir, '/'), 'view' => request('view')]),
                 'url'       => $this->storage->url($dir),
+                'time'      => $this->getFileChangeTime($dir),
             ];
 
         }, $dirs);
@@ -309,5 +311,12 @@ class MediaManager extends Extension
         }
 
         return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    public function getFileChangeTime($file)
+    {
+        $time = filectime($this->getFullPath($file));
+
+        return date('Y-m-d H:i:s', $time);
     }
 }
