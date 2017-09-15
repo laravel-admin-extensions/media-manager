@@ -22,7 +22,9 @@ Add a disk config in `config/admin.php`:
     'extensions' => [
 
         'media-manager' => [
-            'disk' => 'public'
+        
+            // Select a local disk that you configured in `config/filesystem.php`
+            'disk' => 'public'
         ],
     ],
 
