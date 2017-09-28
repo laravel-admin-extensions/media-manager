@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Adapter\Local;
 
 /**
- * Class MediaManager
- * @package Encore\Admin\Media
+ * Class MediaManager.
  */
 class MediaManager extends Extension
 {
@@ -39,11 +38,12 @@ class MediaManager extends Extension
         'zip'   => 'zip|tar\.gz|rar|rpm',
         'txt'   => 'txt|pac|log|md',
         'audio' => 'mp3|wav|flac|3pg|aa|aac|ape|au|m4a|mpc|ogg',
-        'video' => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg'
+        'video' => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg',
     ];
 
     /**
      * MediaManager constructor.
+     *
      * @param string $path
      */
     public function __construct($path = '/')
@@ -87,6 +87,7 @@ class MediaManager extends Extension
      * Get full path for a giving fiel path.
      *
      * @param string $path
+     *
      * @return string
      */
     protected function getFullPath($path)
@@ -129,7 +130,8 @@ class MediaManager extends Extension
 
     /**
      * @param UploadedFile[] $files
-     * @param string $dir
+     * @param string         $dir
+     *
      * @return mixed
      */
     public function upload($files = [])
@@ -173,7 +175,6 @@ class MediaManager extends Extension
     public function formatFiles($files = [])
     {
         $files = array_map(function ($file) {
-
             return [
                 'download'  => route('media-download', compact('file')),
                 'icon'      => '',
@@ -185,7 +186,6 @@ class MediaManager extends Extension
                 'url'       => $this->storage->url($file),
                 'time'      => $this->getFileChangeTime($file),
             ];
-
         }, $files);
 
         return collect($files);
@@ -198,7 +198,6 @@ class MediaManager extends Extension
         $preview = "<a href=\"$url\"><span class=\"file-icon text-aqua\"><i class=\"fa fa-folder\"></i></span></a>";
 
         $dirs = array_map(function ($dir) use ($preview) {
-
             return [
                 'download'  => '',
                 'icon'      => '',
@@ -210,7 +209,6 @@ class MediaManager extends Extension
                 'url'       => $this->storage->url($dir),
                 'time'      => $this->getFileChangeTime($dir),
             ];
-
         }, $dirs);
 
         return collect($dirs);
@@ -227,11 +225,10 @@ class MediaManager extends Extension
         $navigation = [];
 
         foreach ($folders as $folder) {
-
-            $path = rtrim($path, '/') . '/'.$folder;
+            $path = rtrim($path, '/').'/'.$folder;
 
             $navigation[] = [
-                'name' => $folder,
+                'name'  => $folder,
                 'url'   => route('media-index', ['path' => $path]),
             ];
         }
@@ -280,7 +277,7 @@ class MediaManager extends Extension
                 $preview = '<span class="file-icon"><i class="fa fa-code"></i></span>';
                 break;
 
-            default :
+            default:
                 $preview = '<span class="file-icon"><i class="fa fa-file"></i></span>';
         }
 
@@ -310,7 +307,7 @@ class MediaManager extends Extension
             $bytes /= 1024;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 
     public function getFileChangeTime($file)
