@@ -336,7 +336,7 @@ $(function () {
                         <td>
                             {!! $item['preview'] !!}
 
-                            <a href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
+                            <a @if(!$item['isDir'])target="_blank"@endif href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
                             {{ $item['icon'] }} {{ basename($item['name']) }}
                             </a>
                         </td>
@@ -346,7 +346,7 @@ $(function () {
                                 <a class="btn btn-default file-rename" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}"><i class="fa fa-edit"></i></a>
                                 <a class="btn btn-default file-delete" data-path="{{ $item['name'] }}"><i class="fa fa-trash"></i></a>
                                 @unless($item['isDir'])
-                                <a href="{{ $item['download'] }}" class="btn btn-default"><i class="fa fa-download"></i></a>
+                                <a target="_blank" href="{{ $item['download'] }}" class="btn btn-default"><i class="fa fa-download"></i></a>
                                 @endunless
                                 <a class="btn btn-default" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}"><i class="fa fa-internet-explorer"></i></a>
                             </div>
