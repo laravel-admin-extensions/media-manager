@@ -318,7 +318,7 @@ $(function () {
                             {!! $item['preview'] !!}
 
                             <div class="file-info">
-                                <a href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
+                                <a @if(!$item['isDir'])target="_blank"@endif href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
                                     {{ $item['icon'] }} {{ basename($item['name']) }}
                                 </a>
                             <span class="file-size">
@@ -333,7 +333,7 @@ $(function () {
                                         <li><a href="#" class="file-rename" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}">Rename & Move</a></li>
                                         <li><a href="#" class="file-delete" data-path="{{ $item['name'] }}">Delete</a></li>
                                         @unless($item['isDir'])
-                                        <li><a href="{{ $item['download'] }}">Download</a></li>
+                                        <li><a target="_blank" href="{{ $item['download'] }}">Download</a></li>
                                         @endunless
                                         <li class="divider"></li>
                                         <li><a href="#" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}">Url</a></li>
