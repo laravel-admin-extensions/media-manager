@@ -333,7 +333,9 @@ $(function () {
                                         <li><a href="#" class="file-rename" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}">Rename & Move</a></li>
                                         <li><a href="#" class="file-delete" data-path="{{ $item['name'] }}">Delete</a></li>
                                         @unless($item['isDir'])
+                                        <li><a href="{{ $item['detail']}}">Crop</a></li>
                                         <li><a target="_blank" href="{{ $item['download'] }}">Download</a></li>
+
                                         @endunless
                                         <li class="divider"></li>
                                         <li><a href="#" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}">Url</a></li>

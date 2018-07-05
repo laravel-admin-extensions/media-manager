@@ -90,7 +90,7 @@ class MediaManager extends Extension
      *
      * @return string
      */
-    protected function getFullPath($path)
+    public function getFullPath($path)
     {
         return $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
     }
@@ -143,6 +143,13 @@ class MediaManager extends Extension
         return true;
     }
 
+    public function uploadCropFile($fileCrop, $name)
+    {
+        $this->storage->putFileAs($this->path, $fileCrop, 'c_'.(new \DateTime())->format('y-m-d H:i:s').'_'.$name);
+
+        return true;
+    }
+
     public function newFolder($name)
     {
         $path = rtrim($this->path, '/').'/'.trim($name, '/');
@@ -177,6 +184,7 @@ class MediaManager extends Extension
         $files = array_map(function ($file) {
             return [
                 'download'  => route('media-download', compact('file')),
+                'detail'    => route('media-detail', compact('file')),
                 'icon'      => '',
                 'name'      => $file,
                 'preview'   => $this->getFilePreview($file),

@@ -6,6 +6,7 @@ use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
@@ -111,6 +112,55 @@ class MediaController extends Controller
                     'message' => trans('admin.move_succeeded'),
                 ]);
             }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => true,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function detail(Request $request)
+    {
+        $file = $request->get('file');
+
+        $filePart = explode('/', $file);
+        $fileName = array_pop($filePart);
+        $manager = new MediaManager(implode('/', $filePart));
+
+        $fullPath = $manager->getFullPath($file);
+
+        try {
+            if ($manager->exists($fullPath)) {
+                return Admin::content(function (Content $content) use ($file, $manager) {
+                    $content->header('Crop image');
+
+                    $content->body(view('laravel-admin-media::crop', [
+                        'file'    => $file,
+                        'fileUrl' => Storage::url($file),
+                        'url'     => $manager->urls(),
+                        'nav'     => $manager->navigation(),
+                    ]));
+                });
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => true,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function cropUpdate(Request $request)
+    {
+        $fileCrop = $request->file('croppedImage');
+        $fileURl = $request->get('file');
+
+        try {
+            $filePart = explode('/', $fileURl);
+            $fileName = array_pop($filePart);
+            $manager = new MediaManager(implode('/', $filePart));
+            $manager->uploadCropFile($fileCrop, $fileName);
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => true,

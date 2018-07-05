@@ -26,6 +26,8 @@ trait BootExtension
         parent::routes(function ($router) {
             /* @var \Illuminate\Routing\Router $router */
             $router->get('media', 'Encore\Admin\Media\MediaController@index')->name('media-index');
+            $router->get('media/detail', 'Encore\Admin\Media\MediaController@detail')->name('media-detail');
+            $router->post('media/crop/upload', 'Encore\Admin\Media\MediaController@cropUpdate')->name('media-crop-update');
             $router->get('media/download', 'Encore\Admin\Media\MediaController@download')->name('media-download');
             $router->delete('media/delete', 'Encore\Admin\Media\MediaController@delete')->name('media-delete');
             $router->put('media/move', 'Encore\Admin\Media\MediaController@move')->name('media-move');

@@ -347,6 +347,7 @@ $(function () {
                                 <a class="btn btn-default file-delete" data-path="{{ $item['name'] }}"><i class="fa fa-trash"></i></a>
                                 @unless($item['isDir'])
                                 <a target="_blank" href="{{ $item['download'] }}" class="btn btn-default"><i class="fa fa-download"></i></a>
+                                <a class="btn btn-default" href="{{ $item['detail']}}"><i class="fa fa-crop"></i></a>
                                 @endunless
                                 <a class="btn btn-default" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}"><i class="fa fa-internet-explorer"></i></a>
                             </div>

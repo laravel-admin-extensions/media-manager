@@ -41,6 +41,10 @@ Add a disk config in `config/admin.php`:
 
 Open `http://localhost/admin/media`.
 
+## Using crop function 
+Add `Encore\Admin\Admin::js('https://cdnjs.cloudflare.com/ajax/libs/cropper/4.0.0/cropper.min.js');`
+to `app/Admin/bootstrap.php`
+
 License
 ------------
 Licensed under [The MIT License (MIT)](LICENSE).
