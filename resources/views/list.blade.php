@@ -74,29 +74,37 @@ $(function () {
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "{{ trans('admin.confirm') }}",
+            showLoaderOnConfirm: true,
             closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}"
-        },
-        function(){
-            $.ajax({
-                method: 'delete',
-                url: '{{ $url['delete'] }}',
-                data: {
-                    'files[]':[path],
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    $.pjax.reload('#pjax-container');
+            cancelButtonText: "{{ trans('admin.cancel') }}",
+            preConfirm: function() {
+                return new Promise(function(resolve) {
 
-                    if (typeof data === 'object') {
-                        if (data.status) {
-                            swal(data.message, '', 'success');
-                        } else {
-                            swal(data.message, '', 'error');
+                    $.ajax({
+                        method: 'delete',
+                        url: '{{ $url['delete'] }}',
+                        data: {
+                            'files[]':[path],
+                            _token:LA.token
+                        },
+                        success: function (data) {
+                            $.pjax.reload('#pjax-container');
+
+                            resolve(data);
                         }
-                    }
+                    });
+
+                });
+            }
+        }).then(function(result){
+            var data = result.value;
+            if (typeof data === 'object') {
+                if (data.status) {
+                    swal(data.message, '', 'success');
+                } else {
+                    swal(data.message, '', 'error');
                 }
-            });
+            }
         });
     });
 
@@ -215,29 +223,37 @@ $(function () {
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "{{ trans('admin.confirm') }}",
+            showLoaderOnConfirm: true,
             closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}"
-        },
-        function(){
-            $.ajax({
-                method: 'delete',
-                url: '{{ $url['delete'] }}',
-                data: {
-                    'files[]': files,
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    $.pjax.reload('#pjax-container');
+            cancelButtonText: "{{ trans('admin.cancel') }}",
+            preConfirm: function() {
+                return new Promise(function(resolve) {
 
-                    if (typeof data === 'object') {
-                        if (data.status) {
-                            swal(data.message, '', 'success');
-                        } else {
-                            swal(data.message, '', 'error');
+                    $.ajax({
+                        method: 'delete',
+                        url: '{{ $url['delete'] }}',
+                        data: {
+                            'files[]': files,
+                            _token:LA.token
+                        },
+                        success: function (data) {
+                            $.pjax.reload('#pjax-container');
+
+                            resolve(data);
                         }
-                    }
+                    });
+
+                });
+            }
+        }).then(function (result) {
+            var data = result.value;
+            if (typeof data === 'object') {
+                if (data.status) {
+                    swal(data.message, '', 'success');
+                } else {
+                    swal(data.message, '', 'error');
                 }
-            });
+            }
         });
     });
 });
