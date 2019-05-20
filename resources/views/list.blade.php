@@ -335,7 +335,11 @@ $(function () {
 
                             <div class="file-info">
                                 <a @if(!$item['isDir'])target="_blank"@endif href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
-                                    {{ $item['icon'] }} {{ basename($item['name']) }}
+                                    {{ $item['icon'] }}
+                                    @php
+                                        $file_url_array = explode('/',$item['name']);
+                                        echo end($file_url_array);
+                                    @endphp
                                 </a>
                             <span class="file-size">
                               {{ $item['size'] }}&nbsp;
