@@ -1,4 +1,5 @@
 <?php
+
 namespace Encore\Admin\Media;
 
 use Encore\Admin\Facades\Admin;
@@ -11,19 +12,19 @@ class MediaController extends Controller
     public function index(Request $request)
     {
         return Admin::content(function (Content $content) use ($request) {
-                $content->header('Media manager');
+            $content->header('Media manager');
 
-                $path = $request->get('path', '/');
-                $view = $request->get('view', 'table');
+            $path = $request->get('path', '/');
+            $view = $request->get('view', 'table');
 
-                $manager = new MediaManager($path);
+            $manager = new MediaManager($path);
 
-                $content->body(view("laravel-admin-media::$view", [
+            $content->body(view("laravel-admin-media::$view", [
                 'list'   => $manager->ls(),
                 'nav'    => $manager->navigation(),
                 'url'    => $manager->urls(),
-                ]));
-            });
+            ]));
+        });
     }
 
     public function download(Request $request)
@@ -36,7 +37,7 @@ class MediaController extends Controller
             return $manager->download();
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -69,14 +70,14 @@ class MediaController extends Controller
         try {
             if ($manager->delete($files)) {
                 return response()->json([
-                        'status'  => true,
-                        'message' => trans('admin.delete_succeeded'),
+                    'status'  => true,
+                    'message' => trans('admin.delete_succeeded'),
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
-                    'status'  => false,
-                    'message' => $e->getMessage(),
+                'status'  => false,
+                'message' => $e->getMessage(),
             ]);
         }
     }
@@ -91,14 +92,14 @@ class MediaController extends Controller
         try {
             if ($manager->move($new)) {
                 return response()->json([
-                        'status'  => true,
-                        'message' => trans('admin.move_succeeded'),
+                    'status'  => true,
+                    'message' => trans('admin.move_succeeded'),
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
-                    'status'  => false,
-                    'message' => $e->getMessage(),
+                'status'  => false,
+                'message' => $e->getMessage(),
             ]);
         }
     }

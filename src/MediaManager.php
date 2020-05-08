@@ -28,6 +28,7 @@ class MediaManager extends Extension
 
     /**
      * List of allowed extensions.
+     *
      * @var string
      */
     protected $allowed = [];
@@ -106,6 +107,7 @@ class MediaManager extends Extension
         if (strstr($fullPath, '..')) {
             throw new \Exception('Incorrect path');
         }
+
         return $path;
     }
 
@@ -141,7 +143,7 @@ class MediaManager extends Extension
     {
         $ext = pathinfo($new, PATHINFO_EXTENSION);
         if ($this->allowed && !in_array($ext, $this->allowed)) {
-            throw new \Exception('File extension ' . $ext . ' is not allowed');
+            throw new \Exception('File extension '.$ext.' is not allowed');
         }
 
         return $this->storage->move($this->path, $new);
@@ -157,7 +159,7 @@ class MediaManager extends Extension
     {
         foreach ($files as $file) {
             if ($this->allowed && !in_array($file->getClientOriginalExtension(), $this->allowed)) {
-                throw new \Exception('File extension ' . $file->getClientOriginalExtension() . ' is not allowed');
+                throw new \Exception('File extension '.$file->getClientOriginalExtension().' is not allowed');
             }
 
             $this->storage->putFileAs($this->path, $file, $file->getClientOriginalName());
