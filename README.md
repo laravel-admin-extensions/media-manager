@@ -30,9 +30,10 @@ Add a disk config in `config/admin.php`:
     'extensions' => [
 
         'media-manager' => [
-        
+
             // Select a local disk that you configured in `config/filesystem.php`
-            'disk' => 'public'
+            'disk' => 'public',
+            'allowed_ext' => 'jpg,jpeg,png,pdf,doc,docx,zip'
         ],
     ],
 
