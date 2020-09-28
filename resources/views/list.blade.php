@@ -10,7 +10,7 @@
 
     .files>li>.file-select {
         position: absolute;
-        top: -4px;
+        top: -7px;
         left: -1px;
     }
 
@@ -61,35 +61,26 @@
 
 </style>
 
-<script data-exec-on-popstate>
+<script>
 
-$(function () {
-    $('.file-delete').click(function () {
+    var deleteFiles = function (files) {
 
-        var path = $(this).data('path');
+        if (!files.length) {
+            return;
+        }
 
-        swal({
-            title: "{{ trans('admin.delete_confirm') }}",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "{{ trans('admin.confirm') }}",
-            showLoaderOnConfirm: true,
-            closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}",
+        $.admin.confirm({
+            title: $.admin.trans('delete_confirm'),
             preConfirm: function() {
                 return new Promise(function(resolve) {
-
                     $.ajax({
                         method: 'delete',
                         url: '{{ $url['delete'] }}',
                         data: {
-                            'files[]':[path],
-                            _token:LA.token
+                            'files[]': files,
                         },
                         success: function (data) {
-                            $.pjax.reload('#pjax-container');
-
+                            $.admin.reload();
                             resolve(data);
                         }
                     });
@@ -100,12 +91,23 @@ $(function () {
             var data = result.value;
             if (typeof data === 'object') {
                 if (data.status) {
-                    swal(data.message, '', 'success');
+                    $.admin.toastr.success(data.message);
                 } else {
-                    swal(data.message, '', 'error');
+                    $.admin.toastr.error(data.message);
                 }
             }
         });
+    };
+
+    $('.file-delete').click(function () {
+        deleteFiles([$(this).data('path')]);
+    });
+
+    $('.file-delete-multiple').click(function () {
+        var files = $(".file-select input:checked").map(function(){
+            return $(this).val();
+        }).toArray();
+        deleteFiles(files);
     });
 
     $('#moveModal').on('show.bs.modal', function (event) {
@@ -139,16 +141,15 @@ $(function () {
             data: {
                 path: path,
                 'new': name,
-                _token:LA.token,
             },
             success: function (data) {
-                $.pjax.reload('#pjax-container');
+                $.admin.reload();
 
                 if (typeof data === 'object') {
                     if (data.status) {
-                        toastr.success(data.message);
+                        $.admin.toastr.success(data.message);
                     } else {
-                        toastr.error(data.message);
+                        $.admin.toastr.error(data.message);
                     }
                 }
             }
@@ -173,13 +174,13 @@ $(function () {
             data: formData,
             async: false,
             success: function (data) {
-                $.pjax.reload('#pjax-container');
+                $.admin.reload();
 
                 if (typeof data === 'object') {
                     if (data.status) {
-                        toastr.success(data.message);
+                        $.admin.toastr.success(data.message);
                     } else {
-                        toastr.error(data.message);
+                        $.admin.toastr.error(data.message);
                     }
                 }
             },
@@ -198,137 +199,112 @@ $(function () {
     }
 
     $('.media-reload').click(function () {
-        $.pjax.reload('#pjax-container');
+        $.admin.reload();
     });
 
     $('.goto-url button').click(function () {
         var path = $('.goto-url input').val();
-        $.pjax({container:'#pjax-container', url: '{{ $url['index'] }}?path=' + path });
+        $.admin.redirect('{{ $url['index'] }}?path=' + path);
     });
 
-    $('.file-select>input').iCheck({checkboxClass:'icheckbox_minimal-blue'});
-
-    $('.file-delete-multiple').click(function () {
-        var files = $(".file-select input:checked").map(function(){
-            return $(this).val();
-        }).toArray();
-
-        if (!files.length) {
-            return;
+    $('.files-select-all').on('change', function(event) {
+        if (this.checked) {
+            $('.grid-row-checkbox').prop('checked', true);
+        } else {
+            $('.grid-row-checkbox').prop('checked', false);
         }
-
-        swal({
-            title: "{{ trans('admin.delete_confirm') }}",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "{{ trans('admin.confirm') }}",
-            showLoaderOnConfirm: true,
-            closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}",
-            preConfirm: function() {
-                return new Promise(function(resolve) {
-
-                    $.ajax({
-                        method: 'delete',
-                        url: '{{ $url['delete'] }}',
-                        data: {
-                            'files[]': files,
-                            _token:LA.token
-                        },
-                        success: function (data) {
-                            $.pjax.reload('#pjax-container');
-
-                            resolve(data);
-                        }
-                    });
-
-                });
-            }
-        }).then(function (result) {
-            var data = result.value;
-            if (typeof data === 'object') {
-                if (data.status) {
-                    swal(data.message, '', 'success');
-                } else {
-                    swal(data.message, '', 'error');
-                }
-            }
-        });
     });
-});
 
+    $('.file-select input').on('change', function () {
+        if (this.checked) {
+            $(this).closest('tr').css('background-color', '#ffffd5');
+        } else {
+            $(this).closest('tr').css('background-color', '');
+        }
+    });
+
+    $('.file-select-all input').on('change', function () {
+        if (this.checked) {
+            $('.file-select input').prop('checked', true);
+        } else {
+            $('.file-select input').prop('checked', false);
+        }
+    });
+
+    $('table>tbody>tr').mouseover(function () {
+        $(this).find('.btn-group').removeClass('d-none');
+    }).mouseout(function () {
+        $(this).find('.btn-group').addClass('d-none');
+    });
 </script>
 
 <div class="row">
     <!-- /.col -->
-    <div class="col-md-12">
-        <div class="box box-primary">
+    <div class="col-12">
+        <div class="card card-@color card-outline">
 
-            <div class="box-body no-padding">
+            <div class="card-header">
+                <div class="card-tools">
+                    <div class="input-group float-right goto-url" style="width: 350px;">
+                        <input type="text" name="path" class="form-control" value="{{ '/'.trim($url['path'], '/') }}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-default"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="float-left d-flex">
 
-                <div class="mailbox-controls with-border">
                     <div class="btn-group">
                         <a href="" type="button" class="btn btn-default btn media-reload" title="Refresh">
-                            <i class="fa fa-refresh"></i>
+                            <i class="fas fa-sync"></i>
                         </a>
                         <a type="button" class="btn btn-default btn file-delete-multiple" title="Delete">
-                            <i class="fa fa-trash-o"></i>
+                            <i class="fas fa-trash"></i>
                         </a>
                     </div>
                     <!-- /.btn-group -->
-                    <label class="btn btn-default btn"{{-- data-toggle="modal" data-target="#uploadModal"--}}>
-                        <i class="fa fa-upload"></i>&nbsp;&nbsp;{{ trans('admin.upload') }}
+
+                    <label class="btn btn-default mb-0 ml-1">
+                        <i class="fas fa-upload"></i>&nbsp;&nbsp;{{ trans('admin.upload') }}
                         <form action="{{ $url['upload'] }}" method="post" class="file-upload-form" enctype="multipart/form-data" pjax-container>
-                            <input type="file" name="files[]" class="hidden file-upload" multiple>
+                            <input type="file" name="files[]" class="d-none file-upload" multiple>
                             <input type="hidden" name="dir" value="{{ $url['path'] }}" />
                             {{ csrf_field() }}
                         </form>
                     </label>
 
                     <!-- /.btn-group -->
-                    <a class="btn btn-default btn" data-toggle="modal" data-target="#newFolderModal">
-                        <i class="fa fa-folder"></i>&nbsp;&nbsp;{{ trans('admin.new_folder') }}
+                    <a class="btn btn-default btn ml-1" data-toggle="modal" data-target="#newFolderModal">
+                        <i class="fas fa-folder"></i>&nbsp;&nbsp;{{ trans('admin.new_folder') }}
                     </a>
 
-                    <div class="btn-group">
-                        <a href="{{ route('media-index', ['path' => $url['path'], 'view' => 'table']) }}" class="btn btn-default {{ request('view') == 'table' ? 'active' : '' }}"><i class="fa fa-list"></i></a>
-                        <a href="{{ route('media-index', ['path' => $url['path'], 'view' => 'list']) }}" class="btn btn-default {{ request('view') == 'list' ? 'active' : '' }}"><i class="fa fa-th"></i></a>
+                    <div class="btn-group ml-1">
+                        <a href="{{ route('media-index', ['path' => $url['path'], 'view' => 'table']) }}" class="btn btn-default active"><i class="fas fa-list"></i></a>
+                        <a href="{{ route('media-index', ['path' => $url['path'], 'view' => 'list']) }}" class="btn btn-default"><i class="fas fa-th"></i></a>
                     </div>
-
-                    {{--<form action="{{ $url['index'] }}" method="get" pjax-container>--}}
-                    <div class="input-group input-group-sm pull-right goto-url" style="width: 250px;">
-                        <input type="text" name="path" class="form-control pull-right" value="{{ '/'.trim($url['path'], '/') }}">
-
-                        <div class="input-group-btn">
-                            <button type="submit" class="btn btn-default"><i class="fa fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    {{--</form>--}}
-
                 </div>
-
-                <!-- /.mailbox-read-message -->
             </div>
-            <!-- /.box-body -->
-            <div class="box-footer">
-                <ol class="breadcrumb" style="margin-bottom: 10px;">
 
-                    <li><a href="{{ route('media-index') }}"><i class="fa fa-th-large"></i> </a></li>
+            <!-- /.box-body -->
+            <div class="box-body">
+                <ol class="breadcrumb m-2">
+
+                    <li class="breadcrumb-item"><a href="{{ route('media-index') }}"><i class="far fa-folder-open"></i> </a></li>
 
                     @foreach($nav as $item)
-                    <li><a href="{{ $item['url'] }}"> {{ $item['name'] }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ $item['url'] }}"> {{ $item['name'] }}</a></li>
                     @endforeach
                 </ol>
-                <ul class="files clearfix">
+                <ul class="files clearfix m-3">
 
                     @if (empty($list))
                         <li style="height: 200px;border: none;"></li>
                     @else
                         @foreach($list as $item)
                         <li>
-                            <span class="file-select">
-                                <input type="checkbox" value="{{ $item['name'] }}"/>
+                            <span class="file-select icheck-@color d-inline">
+                                <input type="checkbox" value="{{ $item['name'] }}" id="@id"/>
+                                <label for='@id'></label>
                             </span>
 
                             {!! $item['preview'] !!}
@@ -345,15 +321,15 @@ $(function () {
                                         <span class="caret"></span>
                                         <span class="sr-only">Toggle Dropdown</span>
                                     </button>
-                                    <ul class="dropdown-menu" role="menu">
-                                        <li><a href="#" class="file-rename" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}">Rename & Move</a></li>
-                                        <li><a href="#" class="file-delete" data-path="{{ $item['name'] }}">Delete</a></li>
+                                    <div class="dropdown-menu" role="menu">
+                                        <a href="#" class="file-rename dropdown-item" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}">Rename & Move</a>
+                                        <a href="#" class="file-delete dropdown-item" data-path="{{ $item['name'] }}">Delete</a>
                                         @unless($item['isDir'])
-                                        <li><a target="_blank" href="{{ $item['download'] }}">Download</a></li>
+                                        <a target="_blank" class="dropdown-item" href="{{ $item['download'] }}">Download</a>
                                         @endunless
-                                        <li class="divider"></li>
-                                        <li><a href="#" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}">Url</a></li>
-                                    </ul>
+                                        <div role="separator" class="dropdown-divider"></div>
+                                        <a href="#" data-toggle="modal" class="dropdown-item" data-target="#urlModal" data-url="{{ $item['url'] }}">Url</a>
+                                    </div>
                                 </div>
                             </span>
                             </div>
@@ -374,8 +350,8 @@ $(function () {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                <h5 class="modal-title" id="moveModalLabel">Rename & Move</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="moveModalLabel">Rename & Move</h4>
             </div>
             <form id="file-move">
             <div class="modal-body">
@@ -398,8 +374,8 @@ $(function () {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                <h5 class="modal-title" id="urlModalLabel">Url</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="urlModalLabel">Url</h4>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -417,8 +393,8 @@ $(function () {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                <h5 class="modal-title" id="newFolderModalLabel">New folder</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="newFolderModalLabel">New folder</h4>
             </div>
             <form id="new-folder">
                 <div class="modal-body">

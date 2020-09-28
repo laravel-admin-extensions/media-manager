@@ -9,22 +9,22 @@ use Illuminate\Routing\Controller;
 
 class MediaController extends Controller
 {
-    public function index(Request $request)
+    public function index(Content $content, Request $request)
     {
-        return Admin::content(function (Content $content) use ($request) {
-            $content->header('Media manager');
+        $content->header('Media manager');
 
-            $path = $request->get('path', '/');
-            $view = $request->get('view', 'table');
+        $path = $request->get('path', '/');
+        $view = $request->get('view', 'table');
 
-            $manager = new MediaManager($path);
+        $manager = new MediaManager($path);
 
-            $content->body(view("laravel-admin-media::$view", [
-                'list'   => $manager->ls(),
-                'nav'    => $manager->navigation(),
-                'url'    => $manager->urls(),
-            ]));
-        });
+        admin_assets_require('icheck');
+
+        return $content->view("laravel-admin-media::$view", [
+            'list'   => $manager->ls(),
+            'nav'    => $manager->navigation(),
+            'url'    => $manager->urls(),
+        ]);
     }
 
     public function download(Request $request)

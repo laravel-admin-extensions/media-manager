@@ -39,8 +39,6 @@ trait BootExtension
      */
     public static function import()
     {
-        parent::createMenu('Media manager', 'media', 'fa-file');
-
-        parent::createPermission('Media manager', 'ext.media-manager', 'media*');
+        parent::createMenu('Media manager', 'media', 'fas fa-file');
     }
 }
