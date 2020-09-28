@@ -17,10 +17,14 @@ Media manager for `local` disk.
 
 ## Installation
 
-```
-$ composer require laravel-admin-ext/media-manager -vvv
+```shell
+// For laravel-admin 1.x
+composer require laravel-admin-ext/media-manager:1.x -vvv
 
-$ php artisan admin:import media-manager
+// For laravel-admin 2.x
+composer require laravel-admin-ext/media-manager:2.x -vvv
+
+php artisan admin:import media-manager
 ```
 
 Add a disk config in `config/admin.php`:
