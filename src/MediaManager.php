@@ -64,7 +64,7 @@ class MediaManager extends Extension
         }
     }
 
-    public function ls()
+    public function ls($page)
     {
         if (!$this->exists()) {
             Handler::error('Error', "File or directory [$this->path] not exists");
@@ -80,7 +80,7 @@ class MediaManager extends Extension
             ->merge($this->formatFiles($files))
             ->sort(function ($item) {
                 return $item['name'];
-            })->all();
+            })->forPage($page,20);
     }
 
     /**

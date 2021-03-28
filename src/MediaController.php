@@ -20,7 +20,7 @@ class MediaController extends Controller
             $manager = new MediaManager($path);
 
             $content->body(view("laravel-admin-media::$view", [
-                'list'   => $manager->ls(),
+                'list'   => $manager->ls($request->get('page',1)),
                 'nav'    => $manager->navigation(),
                 'url'    => $manager->urls(),
             ]));
