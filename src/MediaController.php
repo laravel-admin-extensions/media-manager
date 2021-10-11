@@ -33,7 +33,14 @@ class MediaController extends Controller
 
         $manager = new MediaManager($file);
 
-        return $manager->download();
+        try {
+            return $manager->download();
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function upload(Request $request)
@@ -69,7 +76,7 @@ class MediaController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => true,
+                'status'  => false,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -91,7 +98,7 @@ class MediaController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => true,
+                'status'  => false,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -113,7 +120,7 @@ class MediaController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => true,
+                'status'  => false,
                 'message' => $e->getMessage(),
             ]);
         }
