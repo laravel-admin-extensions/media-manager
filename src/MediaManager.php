@@ -108,7 +108,7 @@ class MediaManager extends Extension
             throw new \Exception('Incorrect path');
         }
 
-        return fullPath;
+        return $fullPath;
     }
 
     public function download()
