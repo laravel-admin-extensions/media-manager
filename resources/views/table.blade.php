@@ -52,29 +52,37 @@ $(function () {
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "{{ trans('admin.confirm') }}",
+            showLoaderOnConfirm: true,
             closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}"
-        },
-        function(){
-            $.ajax({
-                method: 'delete',
-                url: '{{ $url['delete'] }}',
-                data: {
-                    'files[]':[path],
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    $.pjax.reload('#pjax-container');
+            cancelButtonText: "{{ trans('admin.cancel') }}",
+            preConfirm: function() {
+                return new Promise(function(resolve) {
 
-                    if (typeof data === 'object') {
-                        if (data.status) {
-                            swal(data.message, '', 'success');
-                        } else {
-                            swal(data.message, '', 'error');
+                    $.ajax({
+                        method: 'delete',
+                        url: '{{ $url['delete'] }}',
+                        data: {
+                            'files[]':[path],
+                            _token:LA.token
+                        },
+                        success: function (data) {
+                            $.pjax.reload('#pjax-container');
+
+                            resolve(data);
                         }
-                    }
+                    });
+
+                });
+            }
+        }).then(function(result){
+            var data = result.value;
+            if (typeof data === 'object') {
+                if (data.status) {
+                    swal(data.message, '', 'success');
+                } else {
+                    swal(data.message, '', 'error');
                 }
-            });
+            }
         });
     });
 
@@ -215,29 +223,37 @@ $(function () {
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "{{ trans('admin.confirm') }}",
+            showLoaderOnConfirm: true,
             closeOnConfirm: false,
-            cancelButtonText: "{{ trans('admin.cancel') }}"
-        },
-        function(){
-            $.ajax({
-                method: 'delete',
-                url: '{{ $url['delete'] }}',
-                data: {
-                    'files[]': files,
-                    _token:LA.token,
-                },
-                success: function (data) {
-                    $.pjax.reload('#pjax-container');
+            cancelButtonText: "{{ trans('admin.cancel') }}",
+            preConfirm: function() {
+                return new Promise(function(resolve) {
 
-                    if (typeof data === 'object') {
-                        if (data.status) {
-                            swal(data.message, '', 'success');
-                        } else {
-                            swal(data.message, '', 'error');
+                    $.ajax({
+                        method: 'delete',
+                        url: '{{ $url['delete'] }}',
+                        data: {
+                            'files[]': files,
+                            _token:LA.token
+                        },
+                        success: function (data) {
+                            $.pjax.reload('#pjax-container');
+
+                            resolve(data);
                         }
-                    }
+                    });
+
+                });
+            }
+        }).then(function (result) {
+            var data = result.value;
+            if (typeof data === 'object') {
+                if (data.status) {
+                    swal(data.message, '', 'success');
+                } else {
+                    swal(data.message, '', 'error');
                 }
-            });
+            }
         });
     });
 
@@ -336,7 +352,7 @@ $(function () {
                         <td>
                             {!! $item['preview'] !!}
 
-                            <a href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
+                            <a @if(!$item['isDir'])target="_blank"@endif href="{{ $item['link'] }}" class="file-name" title="{{ $item['name'] }}">
                             {{ $item['icon'] }} {{ basename($item['name']) }}
                             </a>
                         </td>
@@ -346,7 +362,7 @@ $(function () {
                                 <a class="btn btn-default file-rename" data-toggle="modal" data-target="#moveModal" data-name="{{ $item['name'] }}"><i class="fa fa-edit"></i></a>
                                 <a class="btn btn-default file-delete" data-path="{{ $item['name'] }}"><i class="fa fa-trash"></i></a>
                                 @unless($item['isDir'])
-                                <a href="{{ $item['download'] }}" class="btn btn-default"><i class="fa fa-download"></i></a>
+                                <a target="_blank" href="{{ $item['download'] }}" class="btn btn-default"><i class="fa fa-download"></i></a>
                                 @endunless
                                 <a class="btn btn-default" data-toggle="modal" data-target="#urlModal" data-url="{{ $item['url'] }}"><i class="fa fa-internet-explorer"></i></a>
                             </div>

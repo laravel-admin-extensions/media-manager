@@ -27,6 +27,13 @@ class MediaManager extends Extension
     protected $storage;
 
     /**
+     * List of allowed extensions.
+     *
+     * @var string
+     */
+    protected $allowed = [];
+
+    /**
      * @var array
      */
     protected $fileTypes = [
@@ -49,6 +56,10 @@ class MediaManager extends Extension
     public function __construct($path = '/')
     {
         $this->path = $path;
+
+        if (!empty(config('admin.extensions.media-manager.allowed_ext'))) {
+            $this->allowed = explode(',', config('admin.extensions.media-manager.allowed_ext'));
+        }
 
         $this->initStorage();
     }
@@ -77,10 +88,10 @@ class MediaManager extends Extension
         $directories = $this->storage->directories($this->path);
 
         return $this->formatDirectories($directories)
-            ->merge($this->formatFiles($files))
-            ->sort(function ($item) {
-                return $item['name'];
-            })->all();
+                ->merge($this->formatFiles($files))
+                ->sort(function ($item) {
+                    return $item['name'];
+                })->all();
     }
 
     /**
@@ -92,7 +103,12 @@ class MediaManager extends Extension
      */
     protected function getFullPath($path)
     {
-        return $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
+        $fullPath = $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
+        if (strstr($fullPath, '..')) {
+            throw new \Exception('Incorrect path');
+        }
+
+        return $fullPath;
     }
 
     public function download()
@@ -125,6 +141,11 @@ class MediaManager extends Extension
 
     public function move($new)
     {
+        $ext = pathinfo($new, PATHINFO_EXTENSION);
+        if ($this->allowed && !in_array($ext, $this->allowed)) {
+            throw new \Exception('File extension '.$ext.' is not allowed');
+        }
+
         return $this->storage->move($this->path, $new);
     }
 
@@ -137,6 +158,10 @@ class MediaManager extends Extension
     public function upload($files = [])
     {
         foreach ($files as $file) {
+            if ($this->allowed && !in_array($file->getClientOriginalExtension(), $this->allowed)) {
+                throw new \Exception('File extension '.$file->getClientOriginalExtension().' is not allowed');
+            }
+
             $this->storage->putFileAs($this->path, $file, $file->getClientOriginalName());
         }
 
