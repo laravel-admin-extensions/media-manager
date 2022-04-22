@@ -4,10 +4,12 @@ namespace Encore\Admin\Media;
 
 use Encore\Admin\Exception\Handler;
 use Encore\Admin\Extension;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use League\Flysystem\Adapter\Local;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
 /**
  * Class MediaManager.
@@ -22,7 +24,7 @@ class MediaManager extends Extension
     protected $path = '/';
 
     /**
-     * @var \Illuminate\Filesystem\FilesystemAdapter
+     * @var FilesystemAdapter
      */
     protected $storage;
 
@@ -31,12 +33,12 @@ class MediaManager extends Extension
      */
     protected $fileTypes = [
         'image' => 'png|jpg|jpeg|tmp|gif',
-        'word'  => 'doc|docx',
-        'ppt'   => 'ppt|pptx',
-        'pdf'   => 'pdf',
-        'code'  => 'php|js|java|python|ruby|go|c|cpp|sql|m|h|json|html|aspx',
-        'zip'   => 'zip|tar\.gz|rar|rpm',
-        'txt'   => 'txt|pac|log|md',
+        'word' => 'doc|docx',
+        'ppt' => 'ppt|pptx',
+        'pdf' => 'pdf',
+        'code' => 'php|js|java|python|ruby|go|c|cpp|sql|m|h|json|html|aspx',
+        'zip' => 'zip|tar\.gz|rar|rpm',
+        'txt' => 'txt|pac|log|md',
         'audio' => 'mp3|wav|flac|3pg|aa|aac|ape|au|m4a|mpc|ogg',
         'video' => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg',
     ];
@@ -46,7 +48,7 @@ class MediaManager extends Extension
      *
      * @param string $path
      */
-    public function __construct($path = '/')
+    public function __construct(string $path = '/')
     {
         $this->path = $path;
 
@@ -59,12 +61,12 @@ class MediaManager extends Extension
 
         $this->storage = Storage::disk($disk);
 
-        if (!$this->storage->getDriver()->getAdapter() instanceof Local) {
+        if (!$this->storage->getAdapter() instanceof LocalFilesystemAdapter) {
             Handler::error('Error', '[laravel-admin-ext/media-manager] only works for local storage.');
         }
     }
 
-    public function ls()
+    public function ls(): array
     {
         if (!$this->exists()) {
             Handler::error('Error', "File or directory [$this->path] not exists");
@@ -83,37 +85,17 @@ class MediaManager extends Extension
             })->all();
     }
 
-    /**
-     * Get full path for a giving fiel path.
-     *
-     * @param string $path
-     *
-     * @return string
-     */
-    protected function getFullPath($path)
-    {
-        return $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
-    }
-
     public function download()
     {
-        $fullPath = $this->getFullPath($this->path);
-
-        if (File::isFile($fullPath)) {
-            return response()->download($fullPath);
-        }
-
-        return response('', 404);
+        $this->storage->download($this->path);
     }
 
-    public function delete($path)
+    public function delete($path): bool
     {
         $paths = is_array($path) ? $path : func_get_args();
 
         foreach ($paths as $path) {
-            $fullPath = $this->getFullPath($path);
-
-            if (is_file($fullPath)) {
+            if ($this->storage->fileExists($path)) {
                 $this->storage->delete($path);
             } else {
                 $this->storage->deleteDirectory($path);
@@ -123,18 +105,16 @@ class MediaManager extends Extension
         return true;
     }
 
-    public function move($new)
+    public function move($new): bool
     {
         return $this->storage->move($this->path, $new);
     }
 
     /**
      * @param UploadedFile[] $files
-     * @param string         $dir
-     *
      * @return mixed
      */
-    public function upload($files = [])
+    public function upload(array $files = [])
     {
         foreach ($files as $file) {
             $this->storage->putFileAs($this->path, $file, $file->getClientOriginalName());
@@ -143,55 +123,53 @@ class MediaManager extends Extension
         return true;
     }
 
-    public function newFolder($name)
+    public function newFolder($name): bool
     {
-        $path = rtrim($this->path, '/').'/'.trim($name, '/');
+        $path = rtrim($this->path, '/') . '/' . trim($name, '/');
 
         return $this->storage->makeDirectory($path);
     }
 
-    public function exists()
+    public function exists(): bool
     {
-        $path = $this->getFullPath($this->path);
-
-        return file_exists($path);
+        return $this->storage->exists($this->path);
     }
 
     /**
      * @return array
      */
-    public function urls()
+    public function urls(): array
     {
         return [
-            'path'       => $this->path,
-            'index'      => route('media-index'),
-            'move'       => route('media-move'),
-            'delete'     => route('media-delete'),
-            'upload'     => route('media-upload'),
+            'path' => $this->path,
+            'index' => route('media-index'),
+            'move' => route('media-move'),
+            'delete' => route('media-delete'),
+            'upload' => route('media-upload'),
             'new-folder' => route('media-new-folder'),
         ];
     }
 
-    public function formatFiles($files = [])
+    public function formatFiles($files = []): Collection
     {
         $files = array_map(function ($file) {
             return [
-                'download'  => route('media-download', compact('file')),
-                'icon'      => '',
-                'name'      => $file,
-                'preview'   => $this->getFilePreview($file),
-                'isDir'     => false,
-                'size'      => $this->getFilesize($file),
-                'link'      => route('media-download', compact('file')),
-                'url'       => $this->storage->url($file),
-                'time'      => $this->getFileChangeTime($file),
+                'download' => route('media-download', compact('file')),
+                'icon' => '',
+                'name' => $file,
+                'preview' => $this->getFilePreview($file),
+                'isDir' => false,
+                'size' => $this->getFilesize($file),
+                'link' => route('media-download', compact('file')),
+                'url' => $this->storage->url($file),
+                'time' => $this->getFileChangeTime($file),
             ];
         }, $files);
 
         return collect($files);
     }
 
-    public function formatDirectories($dirs = [])
+    public function formatDirectories($dirs = []): Collection
     {
         $url = route('media-index', ['path' => '__path__', 'view' => request('view')]);
 
@@ -199,22 +177,22 @@ class MediaManager extends Extension
 
         $dirs = array_map(function ($dir) use ($preview) {
             return [
-                'download'  => '',
-                'icon'      => '',
-                'name'      => $dir,
-                'preview'   => str_replace('__path__', $dir, $preview),
-                'isDir'     => true,
-                'size'      => '',
-                'link'      => route('media-index', ['path' => '/'.trim($dir, '/'), 'view' => request('view')]),
-                'url'       => $this->storage->url($dir),
-                'time'      => $this->getFileChangeTime($dir),
+                'download' => '',
+                'icon' => '',
+                'name' => $dir,
+                'preview' => str_replace('__path__', $dir, $preview),
+                'isDir' => true,
+                'size' => '',
+                'link' => route('media-index', ['path' => '/' . trim($dir, '/'), 'view' => request('view')]),
+                'url' => $this->storage->url($dir),
+                'time' => $this->getFileChangeTime($dir),
             ];
         }, $dirs);
 
         return collect($dirs);
     }
 
-    public function navigation()
+    public function navigation(): array
     {
         $folders = explode('/', $this->path);
 
@@ -225,23 +203,23 @@ class MediaManager extends Extension
         $navigation = [];
 
         foreach ($folders as $folder) {
-            $path = rtrim($path, '/').'/'.$folder;
+            $path = rtrim($path, '/') . '/' . $folder;
 
             $navigation[] = [
-                'name'  => $folder,
-                'url'   => route('media-index', ['path' => $path]),
+                'name' => $folder,
+                'url' => route('media-index', ['path' => $path]),
             ];
         }
 
         return $navigation;
     }
 
-    public function getFilePreview($file)
+    public function getFilePreview($file): string
     {
         switch ($this->detectFileType($file)) {
             case 'image':
 
-                if ($this->storage->getDriver()->getConfig()->has('url')) {
+                if ($this->storage->getConfig()['url']) {
                     $url = $this->storage->url($file);
                     $preview = "<span class=\"file-icon has-img\"><img src=\"$url\" alt=\"Attachment\"></span>";
                 } else {
@@ -297,9 +275,9 @@ class MediaManager extends Extension
         return false;
     }
 
-    public function getFilesize($file)
+    public function getFilesize($file): string
     {
-        $bytes = filesize($this->getFullPath($file));
+        $bytes = $this->storage->size($file);
 
         $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
@@ -307,12 +285,12 @@ class MediaManager extends Extension
             $bytes /= 1024;
         }
 
-        return round($bytes, 2).' '.$units[$i];
+        return round($bytes, 2) . ' ' . $units[$i];
     }
 
-    public function getFileChangeTime($file)
+    public function getFileChangeTime(string $file): string
     {
-        $time = filectime($this->getFullPath($file));
+        $time = $this->storage->lastModified($file);
 
         return date('Y-m-d H:i:s', $time);
     }
