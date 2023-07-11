@@ -1,9 +1,9 @@
 {
-    "name": "laravel-admin-ext/media-manager",
+    "name": "irisvn/media-manager",
     "description": "Media manager for laravel",
     "type": "library",
     "keywords": ["laravel-admin", "media", "manager"],
-    "homepage": "https://github.com/laravel-admin-extensions/media-manager",
+    "homepage": "https://github.com/irisvn/media-manager",
     "license": "MIT",
     "authors": [
         {
