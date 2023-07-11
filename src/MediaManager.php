@@ -27,13 +27,6 @@ class MediaManager extends Extension
     protected $storage;
 
     /**
-     * List of allowed extensions.
-     *
-     * @var string
-     */
-    protected $allowed = [];
-
-    /**
      * @var array
      */
     protected $fileTypes = [
@@ -47,6 +40,13 @@ class MediaManager extends Extension
         'audio' => 'mp3|wav|flac|3pg|aa|aac|ape|au|m4a|mpc|ogg',
         'video' => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg',
     ];
+
+    /**
+     * List of allowed extensions.
+     *
+     * @var string
+     */
+    protected $allowed = [];
 
     /**
      * MediaManager constructor.
@@ -88,10 +88,10 @@ class MediaManager extends Extension
         $directories = $this->storage->directories($this->path);
 
         return $this->formatDirectories($directories)
-                ->merge($this->formatFiles($files))
-                ->sort(function ($item) {
-                    return $item['name'];
-                })->all();
+            ->merge($this->formatFiles($files))
+            ->sort(function ($item) {
+                return $item['name'];
+            })->all();
     }
 
     /**
@@ -103,12 +103,7 @@ class MediaManager extends Extension
      */
     protected function getFullPath($path)
     {
-        $fullPath = $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
-        if (strstr($fullPath, '..')) {
-            throw new \Exception('Incorrect path');
-        }
-
-        return $fullPath;
+        return $this->storage->path($path);
     }
 
     public function download()
@@ -141,11 +136,6 @@ class MediaManager extends Extension
 
     public function move($new)
     {
-        $ext = pathinfo($new, PATHINFO_EXTENSION);
-        if ($this->allowed && !in_array($ext, $this->allowed)) {
-            throw new \Exception('File extension '.$ext.' is not allowed');
-        }
-
         return $this->storage->move($this->path, $new);
     }
 
@@ -158,7 +148,7 @@ class MediaManager extends Extension
     public function upload($files = [])
     {
         foreach ($files as $file) {
-            if ($this->allowed && !in_array($file->getClientOriginalExtension(), $this->allowed)) {
+            if ($this->allowed && !in_array(strtolower($file->getClientOriginalExtension()), $this->allowed)) {
                 throw new \Exception('File extension '.$file->getClientOriginalExtension().' is not allowed');
             }
 
@@ -266,7 +256,7 @@ class MediaManager extends Extension
         switch ($this->detectFileType($file)) {
             case 'image':
 
-                if ($this->storage->getDriver()->getConfig()->has('url')) {
+                if ($this->storage->getConfig()['url']) {
                     $url = $this->storage->url($file);
                     $preview = "<span class=\"file-icon has-img\"><img src=\"$url\" alt=\"Attachment\"></span>";
                 } else {
@@ -324,7 +314,7 @@ class MediaManager extends Extension
 
     public function getFilesize($file)
     {
-        $bytes = filesize($this->getFullPath($file));
+        $bytes = $this->storage->size($file);
 
         $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
