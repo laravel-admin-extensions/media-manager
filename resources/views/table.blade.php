@@ -376,6 +376,7 @@ $(function () {
                 </table>
                 @endif
 
+                {!! $paginator !!}
             </div>
             <!-- /.box-footer -->
             <!-- /.box-footer -->

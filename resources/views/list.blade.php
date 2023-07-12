@@ -361,6 +361,7 @@ $(function () {
                         @endforeach
                     @endif
                 </ul>
+                {!! $paginator !!}
             </div>
             <!-- /.box-footer -->
             <!-- /.box-footer -->
