@@ -4,7 +4,9 @@ namespace Encore\Admin\Media;
 
 use Encore\Admin\Exception\Handler;
 use Encore\Admin\Extension;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Local\LocalFilesystemAdapter;
@@ -75,7 +77,7 @@ class MediaManager extends Extension
         }
     }
 
-    public function ls()
+    public function ls($query = null)
     {
         if (!$this->exists()) {
             Handler::error('Error', "File or directory [$this->path] not exists");
@@ -83,15 +85,39 @@ class MediaManager extends Extension
             return [];
         }
 
-        $files = $this->storage->files($this->path);
+        $allFiles = $this->storage->files($this->path);
+        $paginator = $this->paginator($allFiles, $query);
 
         $directories = $this->storage->directories($this->path);
-
-        return $this->formatDirectories($directories)
-            ->merge($this->formatFiles($files))
+        $files = $this->formatDirectories($directories)
+            ->merge($this->formatFiles($paginator->items()))
             ->sort(function ($item) {
                 return $item['name'];
             })->all();
+
+        $return = [
+            'files' => $files,
+            'paginator' => $paginator
+        ];
+
+        return $return;
+    }
+
+    public function paginator(array $files, $query)
+    {
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentFiles = array_slice($files, ($currentPage - 1) * $perPage, $perPage);
+
+        $paginatedFiles = new LengthAwarePaginator(
+            $currentFiles,
+            count($files),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath(), 'query' => $query]
+        );
+
+        return $paginatedFiles;
     }
 
     /**
@@ -327,8 +353,7 @@ class MediaManager extends Extension
 
     public function getFileChangeTime($file)
     {
-        $time = filectime($this->getFullPath($file));
-
+        $time = $this->storage->lastModified($file);
         return date('Y-m-d H:i:s', $time);
     }
 }

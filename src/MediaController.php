@@ -6,6 +6,7 @@ use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class MediaController extends Controller
 {
@@ -18,9 +19,11 @@ class MediaController extends Controller
             $view = $request->get('view', 'table');
 
             $manager = new MediaManager($path);
+            $list = $manager->ls($request->query());
 
             $content->body(view("laravel-admin-media::$view", [
-                'list'   => $manager->ls(),
+                'list'   => $list['files'],
+                'paginator' => $list['paginator']->links('admin::pagination')->toHtml(),
                 'nav'    => $manager->navigation(),
                 'url'    => $manager->urls(),
             ]));
