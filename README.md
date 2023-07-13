@@ -13,16 +13,13 @@ Media manager for `local` disk.
 
 ## Screenshot
 
-![wx20170809-170104](https://user-images.githubusercontent.com/1479100/29113762-99886c32-7d24-11e7-922d-5981a5849c7a.png)
+![wx20170809-170104](https://i.imgur.com/V8Ayl3f.png)
 
 ## Installation
+### Link: https://packagist.org/packages/irisvn/media-manager
 
 ```shell
-// For laravel-admin 1.x
-composer require laravel-admin-ext/media-manager:1.x -vvv
-
-// For laravel-admin 2.x
-composer require laravel-admin-ext/media-manager:2.x -vvv
+composer require irisvn/media-manager
 
 php artisan admin:import media-manager
 ```
